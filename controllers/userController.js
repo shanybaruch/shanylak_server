@@ -17,7 +17,12 @@ exports.getAllUsers = async (req, res) => {
 // Register user
 exports.register = async (req, res) => {
     try {
-        const { phone, email } = req.body;
+        const { firstName, lastName, email, phone } = req.body;
+
+        // Validate required fields
+        if (!firstName || !lastName || !email || !phone) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
 
         // Check if the user already exists
         let user = await User.findOne({ email });
@@ -56,13 +61,25 @@ exports.register = async (req, res) => {
 // Verify authentication code
 exports.verifyCode = async (req, res) => {
     try {
-        const { email, code } = req.body;
+        const { email, code, firstName, lastName, phone } = req.body;
+        console.log(req.body);
+        
+
+        // Validate required fields
+        if (!email || !code || !firstName || !lastName || !phone) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
 
         // Check if the code matches
         if (authCodes[email] && parseInt(code) === authCodes[email]) {
             // Create the user after verification
-            const { phone } = req.body;
-            const user = new User({ email, phone, authCode: null });
+            const user = new User({
+                firstName,
+                lastName,
+                email,
+                phone,
+                authCode: null,
+            });
             await user.save();
 
             // Remove the temporary auth code
